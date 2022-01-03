@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "121278339531",
+    "firebase_url": "https://qrsystem-1b711-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "qrsystem-1b711",
+    "storage_bucket": "qrsystem-1b711.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:121278339531:android:553b6ac950cb9004bafe4e",
+        "android_client_info": {
+          "package_name": "com.example.qrproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "121278339531-31f35jmmsdnki7q7ef1p36i2l0sc95i1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkex87QkQIf8AV9JesZFMxsigKmhVBrh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "121278339531-31f35jmmsdnki7q7ef1p36i2l0sc95i1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "121278339531-965sr6g8jhgkaj62b0r0t2oudlapbeu4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.qrproject"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

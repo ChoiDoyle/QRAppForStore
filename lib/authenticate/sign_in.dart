@@ -37,15 +37,16 @@ class _SignInState extends State<SignIn> {
               ),
               const Header(),
               Expanded(
-                  child: Container(
-                decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(60),
-                      topRight: Radius.circular(60),
-                    )),
-                child: InputWrapper(),
-              ))
+                child: Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(60),
+                        topRight: Radius.circular(60),
+                      )),
+                  child: InputWrapper(),
+                ),
+              )
             ],
           )),
     );
@@ -62,3 +63,5 @@ class _SignInState extends State<SignIn> {
     }
   }
 }
+
+class EgdeInsets {}

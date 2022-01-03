@@ -44,7 +44,7 @@ class _HomeState extends State<Home> {
             SizedBox(
               height: width * 0.01,
             ),
-            buildListView()
+            Expanded(child: buildListView()),
           ],
         ),
         bottomNavigationBar: buildNavigationBar(),
@@ -185,16 +185,14 @@ class _HomeState extends State<Home> {
               }
             });
           }
-          return Expanded(
-            child: orderList(dataListUpdated, context),
-          );
+          return orderList(dataListUpdated, context);
         });
   }
 
   ListView orderList(List<Data> dataListUpdated, BuildContext context) {
     return ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
+        //physics: const NeverScrollableScrollPhysics(),
+        //shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemCount: dataListUpdated.length,
         itemBuilder: (_, index) {
@@ -246,12 +244,12 @@ class _HomeState extends State<Home> {
                       color: Colors.white,
                       fontSize: 70.sp,
                       fontWeight: FontWeight.bold)),
-              const SizedBox(
-                height: 0.05,
+              SizedBox(
+                height: 0.05.h,
               ),
               menuList(menu, context),
-              const SizedBox(
-                height: 0.1,
+              SizedBox(
+                height: 0.1.h,
               ),
               Container(
                   width: double.infinity,
@@ -264,8 +262,8 @@ class _HomeState extends State<Home> {
                         fontSize: 30.sp,
                         fontWeight: FontWeight.bold),
                   )),
-              const SizedBox(
-                height: 0.1,
+              SizedBox(
+                height: 0.1.h,
               ),
               Container(
                 width: double.infinity,
@@ -379,8 +377,8 @@ class _HomeState extends State<Home> {
 
   ListView paymentList(List<Data> dataListUpdated, BuildContext context) {
     return ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
+        //physics: const NeverScrollableScrollPhysics(),
+        //shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemCount: dataListUpdated.length,
         itemBuilder: (_, index) {

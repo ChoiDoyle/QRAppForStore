@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:qrproject/wrapper.dart';
+import 'package:qrproject/authenticate/sign_in.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:colorful_safe_area/colorful_safe_area.dart';
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return ScreenUtilInit(
       builder: () => MaterialApp(
-        home: ColorfulSafeArea(color: Colors.cyan, child: Wrapper()),
+        home: ColorfulSafeArea(color: Colors.cyan, child: SignIn()),
       ),
       designSize: Size(1170, 2532),
     );

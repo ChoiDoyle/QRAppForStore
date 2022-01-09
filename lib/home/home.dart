@@ -20,7 +20,7 @@ class _HomeState extends State<Home> {
   String storeID = 'i';
   _HomeState(this.storeID);
 
-  List<Data> dataListFinal = [];
+  List<OrderData> dataListFinal = [];
 
   int navigationIndex = 0;
 
@@ -89,7 +89,7 @@ class _HomeState extends State<Home> {
   }
 
   StreamBuilder<Event> buildListView() {
-    return navigationIndex == 0 ? orderStream() : paymentStream();
+    return navigationIndex == 0 ? orderStream() : orderStream();
   }
 
   BottomNavigationBar buildNavigationBar() {
@@ -123,9 +123,8 @@ class _HomeState extends State<Home> {
             Menu menu = Menu(key, value.toString());
             menuListUpdated.add(menu);
           });
-          return Expanded(
-              child: menuCardUI(menuListUpdated[index].menuName,
-                  menuListUpdated[index].menuNo));
+          return menuCardUI(
+              menuListUpdated[index].menuName, menuListUpdated[index].menuNo);
         });
   }
 
@@ -158,12 +157,11 @@ class _HomeState extends State<Home> {
         stream: FirebaseDatabase.instance
             .reference()
             .child('Order/$storeID')
-            .orderByChild('paid')
-            .equalTo(0)
+            .orderByKey()
             .onValue,
         builder: (context, snapshot) {
-          final List<Data> dataListUpdated = [];
-          int index = 0;
+          final List<OrderData> dataListUpdated = [];
+          //int index = 0;
           if (snapshot.hasData) {
             AudioCache().play('audio.mp3');
             final dataMap =
@@ -173,14 +171,8 @@ class _HomeState extends State<Home> {
                 String timestamp = key.toString().split('_')[0];
                 String phone = key.toString().split('_')[1];
                 String table = key.toString().split('_')[2];
-                Data data = Data(
-                    dataMap[key]['menu'],
-                    phone,
-                    table,
-                    timestamp,
-                    dataMap[key]['delivered'].toString(),
-                    dataMap[key]['paid'].toString(),
-                    key);
+                OrderData data = OrderData(dataMap[key]['menu'], phone, table,
+                    timestamp, dataMap[key]['delivered'].toString(), key);
                 dataListUpdated.add(data);
               }
             });
@@ -189,7 +181,7 @@ class _HomeState extends State<Home> {
         });
   }
 
-  ListView orderList(List<Data> dataListUpdated, BuildContext context) {
+  ListView orderList(List<OrderData> dataListUpdated, BuildContext context) {
     return ListView.builder(
         //physics: const NeverScrollableScrollPhysics(),
         //shrinkWrap: true,
@@ -198,8 +190,14 @@ class _HomeState extends State<Home> {
         itemBuilder: (_, index) {
           return GestureDetector(
               onTap: () {
-                showOrderDialogFunc(context, dataListUpdated[index].delivered,
-                    dataListUpdated[index].dbKey);
+                showOrderDialogFunc(
+                    context,
+                    dataListUpdated[index].delivered,
+                    dataListUpdated[index].dbKey,
+                    dataListUpdated[index].phone,
+                    dataListUpdated[index].table,
+                    dataListUpdated[index].menu,
+                    dataListUpdated[index].timestamp);
               },
               child: orderCardUI(
                 dataListUpdated[index].menu,
@@ -282,7 +280,8 @@ class _HomeState extends State<Home> {
     );
   }
 
-  showOrderDialogFunc(context, delivered, dbKey) {
+  showOrderDialogFunc(
+      context, delivered, dbKey, phone, table, menu, timestamp) {
     return showDialog(
         context: context,
         builder: (context) {
@@ -301,7 +300,9 @@ class _HomeState extends State<Home> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              delivered == '0' ? '주문이 나갔습니까?' : '주문 안나간걸로 할까요?',
+                              delivered == '0'
+                                  ? '주문이 나갔습니까?'
+                                  : '주문이 이미 나간 건입니다.',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize:
@@ -313,15 +314,18 @@ class _HomeState extends State<Home> {
                             ),
                             ElevatedButton(
                               onPressed: () async {
-                                delivered == '0'
-                                    ? await FirebaseDatabase.instance
-                                        .reference()
-                                        .child('Order/$storeID/$dbKey')
-                                        .update({'delivered': 1})
-                                    : await FirebaseDatabase.instance
-                                        .reference()
-                                        .child('Order/$storeID/$dbKey')
-                                        .update({'delivered': 0});
+                                print(delivered);
+                                if (delivered == '0') {
+                                  await FirebaseDatabase.instance
+                                      .reference()
+                                      .child('Order/$storeID/$dbKey')
+                                      .update({'delivered': 1});
+                                  await FirebaseDatabase.instance
+                                      .reference()
+                                      .child('Payment/$storeID/${phone}_$table')
+                                      .push()
+                                      .set(menu);
+                                }
                                 Navigator.pop(context);
                               },
                               child: const Text('확인'),
@@ -342,40 +346,46 @@ class _HomeState extends State<Home> {
     return StreamBuilder(
         stream: FirebaseDatabase.instance
             .reference()
-            .child('Order/$storeID')
-            .orderByChild('delivered')
-            .equalTo(1)
+            .child('Payment/$storeID')
+            .orderByKey()
             .onValue,
         builder: (context, snapshot) {
-          final List<Data> dataListUpdated = [];
+          List<PaymentData> paymentListUpdated = [];
           if (snapshot.hasData) {
-            AudioCache().play('audio.mp3');
-            final dataMap =
+            //AudioCache().play('audio.mp3');
+            Map<String, dynamic> paymentDataMap =
                 Map<String, dynamic>.from((snapshot.data!).snapshot.value);
-            dataMap.forEach((key, value) {
-              if (dataMap[key]['ex'] != 970509) {
-                String timestamp = key.toString().split('_')[0];
-                String phone = key.toString().split('_')[1];
-                String table = key.toString().split('_')[2];
-                Data data = Data(
-                    dataMap[key]['menu'],
-                    phone,
-                    table,
-                    timestamp,
-                    dataMap[key]['delivered'].toString(),
-                    dataMap[key]['paid'].toString(),
-                    key);
-                dataListUpdated.add(data);
+            paymentDataMap.forEach((key, value) {
+              if (paymentDataMap[key]['ex'] != 970509) {
+                final nextMenu = Map<String, dynamic>.from(value);
+                print(nextMenu.toString());
+                String phone = key.toString().split('_')[0];
+                String table = key.toString().split('_')[1];
+                PaymentData data =
+                    PaymentData(MakeMap(nextMenu.toString()), phone, table);
+                paymentListUpdated.add(data);
               }
             });
           }
-          return Expanded(
-            child: paymentList(dataListUpdated, context),
-          );
+          return paymentList(paymentListUpdated, context);
         });
   }
 
-  ListView paymentList(List<Data> dataListUpdated, BuildContext context) {
+  Map MakeMap(String rawData) {
+    String menu = rawData.split('{')[2].replaceAll('}}', '');
+    print(menu);
+    List<String> menu2 = menu.split(', ');
+    print(menu2);
+    Map menu3 = <String, String>{};
+    for (var element in menu2) {
+      menu3[element.split(': ')[0]] = element.split(': ')[1];
+    }
+    print(menu3);
+    return menu3;
+  }
+
+  ListView paymentList(
+      List<PaymentData> dataListUpdated, BuildContext context) {
     return ListView.builder(
         //physics: const NeverScrollableScrollPhysics(),
         //shrinkWrap: true,
@@ -384,27 +394,24 @@ class _HomeState extends State<Home> {
         itemBuilder: (_, index) {
           return GestureDetector(
               onTap: () {
-                showPaymentDialogFunc(context, dataListUpdated[index].paid,
-                    dataListUpdated[index].dbKey);
+                showPaymentDialogFunc(context,
+                    '${dataListUpdated[index].phone}_${dataListUpdated[index].table}');
               },
               child: paymentCardUI(
                 dataListUpdated[index].menu,
                 dataListUpdated[index].phone,
                 dataListUpdated[index].table,
-                dataListUpdated[index].timestamp,
-                dataListUpdated[index].paid,
               ));
         });
   }
 
-  Widget paymentCardUI(
-      Map menu, String phone, String table, String timestamp, String paid) {
+  Widget paymentCardUI(Map menu, String phone, String table) {
     return Container(
       margin: const EdgeInsets.only(bottom: 0, top: 10),
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
       child: Container(
           decoration: BoxDecoration(
-              color: paid == '0' ? Colors.cyan : Colors.cyan.shade100,
+              color: Colors.cyan,
               borderRadius: BorderRadius.only(
                 bottomLeft:
                     Radius.circular(MediaQuery.of(context).size.height * 0.05),
@@ -430,26 +437,12 @@ class _HomeState extends State<Home> {
                       color: Colors.white,
                       fontSize: 70.sp,
                       fontWeight: FontWeight.bold)),
-              const SizedBox(
-                height: 0.05,
+              SizedBox(
+                height: 0.05.h,
               ),
               menuList(menu, context),
-              const SizedBox(
-                height: 0.1,
-              ),
-              Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.only(right: 20),
-                  child: Text(
-                    '주문시각 : $timestamp',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30.sp,
-                        fontWeight: FontWeight.bold),
-                  )),
-              const SizedBox(
-                height: 0.1,
+              SizedBox(
+                height: 0.1.h,
               ),
               Container(
                 width: double.infinity,
@@ -468,7 +461,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  showPaymentDialogFunc(context, paid, dbKey) {
+  showPaymentDialogFunc(context, dbKey) {
     return showDialog(
         context: context,
         builder: (context) {
@@ -487,27 +480,19 @@ class _HomeState extends State<Home> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              paid == '0' ? '결제를 하셨습니까?' : '결제를 안한 걸로 할까요?',
+                              '결제를 하셨습니까?',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize:
                                       MediaQuery.of(context).size.width * 0.05,
                                   fontWeight: FontWeight.bold),
                             ),
-                            const SizedBox(
-                              height: 0.1,
+                            SizedBox(
+                              height: 0.1.h,
                             ),
                             ElevatedButton(
                               onPressed: () async {
-                                paid == '0'
-                                    ? await FirebaseDatabase.instance
-                                        .reference()
-                                        .child('Order/$storeID/$dbKey')
-                                        .update({'paid': 1})
-                                    : await FirebaseDatabase.instance
-                                        .reference()
-                                        .child('Order/$storeID/$dbKey')
-                                        .update({'paid': 0});
+                                //db 지우기
                                 Navigator.pop(context);
                               },
                               child: const Text('확인'),

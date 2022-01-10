@@ -9,6 +9,7 @@ import 'package:colorful_safe_area/colorful_safe_area.dart';
 import 'data.dart';
 
 class Home extends StatefulWidget {
+  //storeID 중복.. 이거 지워보고 에러 있는지 확인
   String storeID = '1';
   Home({Key? key, required this.storeID}) : super(key: key);
 
@@ -24,9 +25,21 @@ class _HomeState extends State<Home> {
 
   int navigationIndex = 0;
 
+  Map<String, int> priceList = <String, int>{};
+
   @override
   void initState() {
     super.initState();
+    priceList = getPriceList(storeID);
+  }
+
+  Map<String, int> getPriceList(String storeID) {
+    switch (storeID) {
+      case 'StoreA':
+        return PriceList().priceStoreA;
+      default:
+        return <String, int>{};
+    }
   }
 
   @override
@@ -109,54 +122,13 @@ class _HomeState extends State<Home> {
     );
   }
 
-//Menu List (for both order and payment)
-  ListView menuList(Map menu, BuildContext context) {
-    return ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        itemCount: menu.keys.length,
-        itemBuilder: (_, index) {
-          final List<Menu> menuListUpdated = [];
-          menu.forEach((key, value) {
-            Menu menu = Menu(key, value.toString());
-            menuListUpdated.add(menu);
-          });
-          return menuCardUI(
-              menuListUpdated[index].menuName, menuListUpdated[index].menuNo);
-        });
-  }
-
-  Widget menuCardUI(String menuName, String menuNo) {
-    return Container(
-      padding: const EdgeInsets.only(left: 1, right: 1, bottom: 1),
-      child: Container(
-          decoration: const BoxDecoration(color: Colors.transparent),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$menuName : $menuNo',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 70.sp,
-                    fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 0.1,
-              ),
-            ],
-          )),
-    );
-  }
-
 //Order List
   StreamBuilder<Event> orderStream() {
     return StreamBuilder(
         stream: FirebaseDatabase.instance
             .reference()
             .child('Order/$storeID')
-            .orderByKey()
+            .orderByChild('delivered')
             .onValue,
         builder: (context, snapshot) {
           final List<OrderData> dataListUpdated = [];
@@ -235,17 +207,19 @@ class _HomeState extends State<Home> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('주문명 :-',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 70.sp,
-                      fontWeight: FontWeight.bold)),
+              Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(right: 20),
+                  child: Text(
+                    '$table번 테이블',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 90.sp,
+                        fontWeight: FontWeight.bold),
+                  )),
               SizedBox(
-                height: 0.05.h,
-              ),
-              menuList(menu, context),
-              SizedBox(
-                height: 0.1.h,
+                height: 0.02.h,
               ),
               Container(
                   width: double.infinity,
@@ -255,24 +229,56 @@ class _HomeState extends State<Home> {
                     textAlign: TextAlign.right,
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 30.sp,
+                        fontSize: 50.sp,
                         fontWeight: FontWeight.bold),
                   )),
               SizedBox(
+                height: 0.05.h,
+              ),
+              orderMenuList(menu, context),
+              SizedBox(
                 height: 0.1.h,
               ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(right: 20),
-                child: Text(
-                  '테이블번호 : $table',
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30.sp,
-                      fontWeight: FontWeight.bold),
+            ],
+          )),
+    );
+  }
+
+  ListView orderMenuList(Map menu, BuildContext context) {
+    return ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        scrollDirection: Axis.vertical,
+        itemCount: menu.keys.length,
+        itemBuilder: (_, index) {
+          final List<Menu> menuListUpdated = [];
+          menu.forEach((key, value) {
+            Menu menu = Menu(key, value.toString());
+            menuListUpdated.add(menu);
+          });
+          return orderMenuCardUI(
+              menuListUpdated[index].menuName, menuListUpdated[index].menuNo);
+        });
+  }
+
+  Widget orderMenuCardUI(String menuName, String menuNo) {
+    return Container(
+      padding: const EdgeInsets.only(left: 1, right: 1, bottom: 1),
+      child: Container(
+          decoration: const BoxDecoration(color: Colors.transparent),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$menuName : $menuNo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 70.sp,
                 ),
-              )
+              ),
+              const SizedBox(
+                height: 0.1,
+              ),
             ],
           )),
     );
@@ -339,35 +345,6 @@ class _HomeState extends State<Home> {
   }
 
 //Payment List
-/*  StreamBuilder<Event> paymentStream() {
-    return StreamBuilder(
-        stream: FirebaseDatabase.instance
-            .reference()
-            .child('Payment/$storeID')
-            .orderByKey()
-            .onValue,
-        builder: (context, snapshot) {
-          List<PaymentData> paymentListUpdated = [];
-          if (snapshot.hasData) {
-            //AudioCache().play('audio.mp3');
-            Map<String, dynamic> paymentDataMap =
-                Map<String, dynamic>.from((snapshot.data!).snapshot.value);
-            paymentDataMap.forEach((key, value) {
-              if (paymentDataMap[key]['ex'] != 970509) {
-                final nextMenu = Map<String, dynamic>.from(value);
-                //print(nextMenu.toString());
-                String phone = key.toString().split('_')[0];
-                String table = key.toString().split('_')[1];
-                PaymentData data =
-                    PaymentData(makeMap(nextMenu.toString()), phone, table);
-                paymentListUpdated.add(data);
-              }
-            });
-          }
-          return paymentList(context);
-        });
-  }*/
-
   Widget paymentBuilder() {
     return FutureBuilder<List<PaymentData>>(
       future: fetchPaymentData(),
@@ -410,19 +387,18 @@ class _HomeState extends State<Home> {
     return paymentListUpdated;
   }
 
-  Map makeMap(String rawData) {
-    print(rawData);
+  Map<String, int> makeMap(String rawData) {
     String menu = rawData.substring(1, rawData.length - 1);
     final menu2 = menu.replaceAll('{', '').replaceAll('}', '');
     final menu3 = menu2.split(', ');
-    Map menu4 = <String, int>{};
+    Map<String, int> menu4 = <String, int>{};
     for (var element in menu3) {
       String key = element.split(': ')[0];
       int value = int.parse(element.split(': ')[1]);
       if (menu4.containsKey(key)) {
-        menu4[key] = menu4[key] + value;
+        menu4[key] = int.parse(menu4[key].toString()) + value.toInt();
       } else {
-        menu4[key] = value;
+        menu4[key] = value.toInt();
       }
     }
     return menu4;
@@ -446,7 +422,11 @@ class _HomeState extends State<Home> {
             ));
       });
 
-  Widget paymentCardUI(Map menu, String phone, String table) {
+  Widget paymentCardUI(Map<String, int> menu, String phone, String table) {
+    int finalPrice = 0;
+    menu.forEach((key, value) {
+      finalPrice = finalPrice + (int.parse(priceList[key].toString()) * value);
+    });
     return Container(
       margin: const EdgeInsets.only(bottom: 0, top: 10),
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
@@ -473,15 +453,22 @@ class _HomeState extends State<Home> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('주문명 :-',
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(right: 20),
+                child: Text(
+                  '$table번 테이블 합계',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 70.sp,
-                      fontWeight: FontWeight.bold)),
+                      fontSize: 80.sp,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
               SizedBox(
                 height: 0.05.h,
               ),
-              menuList(menu, context),
+              paymentMenuList(menu, context),
               SizedBox(
                 height: 0.1.h,
               ),
@@ -489,14 +476,56 @@ class _HomeState extends State<Home> {
                 width: double.infinity,
                 padding: const EdgeInsets.only(right: 20),
                 child: Text(
-                  '테이블번호 : $table',
+                  '합계 : $finalPrice원',
                   textAlign: TextAlign.end,
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 30.sp,
+                      fontSize: 80.sp,
                       fontWeight: FontWeight.bold),
                 ),
-              )
+              ),
+            ],
+          )),
+    );
+  }
+
+  ListView paymentMenuList(Map menu, BuildContext context) {
+    return ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        scrollDirection: Axis.vertical,
+        itemCount: menu.keys.length,
+        itemBuilder: (_, index) {
+          final List<Menu> menuListUpdated = [];
+          menu.forEach((key, value) {
+            Menu menu = Menu(key, value.toString());
+            menuListUpdated.add(menu);
+          });
+          return paymentMenuCardUI(
+              menuListUpdated[index].menuName, menuListUpdated[index].menuNo);
+        });
+  }
+
+  Widget paymentMenuCardUI(String menuName, String menuNo) {
+    final int menuPrice =
+        int.parse(menuNo) * int.parse(priceList[menuName].toString());
+    return Container(
+      padding: const EdgeInsets.only(left: 1, right: 1, bottom: 1),
+      child: Container(
+          decoration: const BoxDecoration(color: Colors.transparent),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$menuName($menuNo개) : $menuPrice원',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 70.sp,
+                ),
+              ),
+              const SizedBox(
+                height: 0.1,
+              ),
             ],
           )),
     );

@@ -26,7 +26,6 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -88,8 +87,8 @@ class _HomeState extends State<Home> {
     );
   }
 
-  StreamBuilder<Event> buildListView() {
-    return navigationIndex == 0 ? orderStream() : orderStream();
+  buildListView() {
+    return navigationIndex == 0 ? orderStream() : paymentBuilder();
   }
 
   BottomNavigationBar buildNavigationBar() {
@@ -161,7 +160,6 @@ class _HomeState extends State<Home> {
             .onValue,
         builder: (context, snapshot) {
           final List<OrderData> dataListUpdated = [];
-          //int index = 0;
           if (snapshot.hasData) {
             AudioCache().play('audio.mp3');
             final dataMap =
@@ -184,7 +182,7 @@ class _HomeState extends State<Home> {
   ListView orderList(List<OrderData> dataListUpdated, BuildContext context) {
     return ListView.builder(
         //physics: const NeverScrollableScrollPhysics(),
-        //shrinkWrap: true,
+        shrinkWrap: true,
         scrollDirection: Axis.vertical,
         itemCount: dataListUpdated.length,
         itemBuilder: (_, index) {
@@ -314,7 +312,6 @@ class _HomeState extends State<Home> {
                             ),
                             ElevatedButton(
                               onPressed: () async {
-                                print(delivered);
                                 if (delivered == '0') {
                                   await FirebaseDatabase.instance
                                       .reference()
@@ -342,7 +339,7 @@ class _HomeState extends State<Home> {
   }
 
 //Payment List
-  StreamBuilder<Event> paymentStream() {
+/*  StreamBuilder<Event> paymentStream() {
     return StreamBuilder(
         stream: FirebaseDatabase.instance
             .reference()
@@ -358,24 +355,66 @@ class _HomeState extends State<Home> {
             paymentDataMap.forEach((key, value) {
               if (paymentDataMap[key]['ex'] != 970509) {
                 final nextMenu = Map<String, dynamic>.from(value);
-                print(nextMenu.toString());
+                //print(nextMenu.toString());
                 String phone = key.toString().split('_')[0];
                 String table = key.toString().split('_')[1];
                 PaymentData data =
-                    PaymentData(MakeMap(nextMenu.toString()), phone, table);
+                    PaymentData(makeMap(nextMenu.toString()), phone, table);
                 paymentListUpdated.add(data);
               }
             });
           }
-          return paymentList(paymentListUpdated, context);
+          return paymentList(context);
         });
+  }*/
+
+  Widget paymentBuilder() {
+    return FutureBuilder<List<PaymentData>>(
+      future: fetchPaymentData(),
+      builder: (context, paymentSnap) {
+        switch (paymentSnap.connectionState) {
+          case ConnectionState.waiting:
+            return Text('loading...');
+          default:
+            if (paymentSnap.hasError) {
+              return Text('에러발생');
+            } else {
+              return paymentList(paymentSnap.data!);
+            }
+        }
+      },
+    );
   }
 
-  Map MakeMap(String rawData) {
+  Future<List<PaymentData>> fetchPaymentData() async {
+    List<PaymentData> paymentListUpdated = [];
+    await FirebaseDatabase.instance
+        .reference()
+        .child('Payment/$storeID')
+        .get()
+        .then((snapshot) {
+      final paymentDataMap = Map<String, dynamic>.from(snapshot.value);
+      paymentDataMap.forEach((key, value) {
+        if (paymentDataMap[key]['ex'] != 970509) {
+          final nextMenu = Map<String, dynamic>.from(value);
+          print(key);
+          print(value);
+          String phone = key.toString().split('_')[0];
+          String table = key.toString().split('_')[1];
+          PaymentData data =
+              PaymentData(makeMap(nextMenu.toString()), phone, table);
+          paymentListUpdated.add(data);
+        }
+      });
+    });
+    return paymentListUpdated;
+  }
+
+  Map makeMap(String rawData) {
     String menu = rawData.split('{')[2].replaceAll('}}', '');
-    print(menu);
+    //print(menu);
     List<String> menu2 = menu.split(', ');
-    print(menu2);
+    //print(menu2);
     Map menu3 = <String, String>{};
     for (var element in menu2) {
       menu3[element.split(': ')[0]] = element.split(': ')[1];
@@ -384,26 +423,23 @@ class _HomeState extends State<Home> {
     return menu3;
   }
 
-  ListView paymentList(
-      List<PaymentData> dataListUpdated, BuildContext context) {
-    return ListView.builder(
-        //physics: const NeverScrollableScrollPhysics(),
-        //shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        itemCount: dataListUpdated.length,
-        itemBuilder: (_, index) {
-          return GestureDetector(
-              onTap: () {
-                showPaymentDialogFunc(context,
-                    '${dataListUpdated[index].phone}_${dataListUpdated[index].table}');
-              },
-              child: paymentCardUI(
-                dataListUpdated[index].menu,
-                dataListUpdated[index].phone,
-                dataListUpdated[index].table,
-              ));
-        });
-  }
+  Widget paymentList(List<PaymentData> paymentListUpdated) => ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: paymentListUpdated.length,
+      itemBuilder: (_, index) {
+        return GestureDetector(
+            onTap: () {
+              showPaymentDialogFunc(context,
+                  '${paymentListUpdated[index].phone}_${paymentListUpdated[index].table}');
+            },
+            child: paymentCardUI(
+              paymentListUpdated[index].menu,
+              paymentListUpdated[index].phone,
+              paymentListUpdated[index].table,
+            ));
+      });
 
   Widget paymentCardUI(Map menu, String phone, String table) {
     return Container(

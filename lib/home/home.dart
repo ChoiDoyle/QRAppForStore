@@ -374,7 +374,7 @@ class _HomeState extends State<Home> {
       builder: (context, paymentSnap) {
         switch (paymentSnap.connectionState) {
           case ConnectionState.waiting:
-            return Text('loading...');
+            return Center(child: Text('loading...'));
           default:
             if (paymentSnap.hasError) {
               return Text('에러발생');
@@ -391,18 +391,18 @@ class _HomeState extends State<Home> {
     await FirebaseDatabase.instance
         .reference()
         .child('Payment/$storeID')
+        .orderByKey()
         .get()
         .then((snapshot) {
       final paymentDataMap = Map<String, dynamic>.from(snapshot.value);
       paymentDataMap.forEach((key, value) {
         if (paymentDataMap[key]['ex'] != 970509) {
-          final nextMenu = Map<String, dynamic>.from(value);
-          print(key);
-          print(value);
+          final nextMenu =
+              Map<String, dynamic>.from(Map<String, dynamic>.from(value));
+          final a = nextMenu.values.toString();
           String phone = key.toString().split('_')[0];
           String table = key.toString().split('_')[1];
-          PaymentData data =
-              PaymentData(makeMap(nextMenu.toString()), phone, table);
+          PaymentData data = PaymentData(makeMap(a), phone, table);
           paymentListUpdated.add(data);
         }
       });
@@ -411,16 +411,21 @@ class _HomeState extends State<Home> {
   }
 
   Map makeMap(String rawData) {
-    String menu = rawData.split('{')[2].replaceAll('}}', '');
-    //print(menu);
-    List<String> menu2 = menu.split(', ');
-    //print(menu2);
-    Map menu3 = <String, String>{};
-    for (var element in menu2) {
-      menu3[element.split(': ')[0]] = element.split(': ')[1];
+    print(rawData);
+    String menu = rawData.substring(1, rawData.length - 1);
+    final menu2 = menu.replaceAll('{', '').replaceAll('}', '');
+    final menu3 = menu2.split(', ');
+    Map menu4 = <String, int>{};
+    for (var element in menu3) {
+      String key = element.split(': ')[0];
+      int value = int.parse(element.split(': ')[1]);
+      if (menu4.containsKey(key)) {
+        menu4[key] = menu4[key] + value;
+      } else {
+        menu4[key] = value;
+      }
     }
-    print(menu3);
-    return menu3;
+    return menu4;
   }
 
   Widget paymentList(List<PaymentData> paymentListUpdated) => ListView.builder(

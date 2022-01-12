@@ -130,7 +130,7 @@ class _HomeState extends State<Home> {
         stream: FirebaseDatabase.instance
             .reference()
             .child('Order/$storeID')
-            .orderByChild('delivered')
+            .orderByKey()
             .onValue,
         builder: (context, snapshot) {
           final List<OrderData> dataListUpdated = [];
@@ -143,8 +143,8 @@ class _HomeState extends State<Home> {
                 String timestamp = key.toString().split('_')[0];
                 String phone = key.toString().split('_')[1];
                 String table = key.toString().split('_')[2];
-                OrderData data = OrderData(dataMap[key]['menu'], phone, table,
-                    timestamp, dataMap[key]['delivered'].toString(), key);
+                OrderData data = OrderData(
+                    dataMap[key]['menu'], phone, table, timestamp, key);
                 dataListUpdated.add(data);
               }
             });
@@ -164,7 +164,6 @@ class _HomeState extends State<Home> {
               onTap: () {
                 showOrderDialogFunc(
                     context,
-                    dataListUpdated[index].delivered,
                     dataListUpdated[index].dbKey,
                     dataListUpdated[index].phone,
                     dataListUpdated[index].table,
@@ -176,19 +175,17 @@ class _HomeState extends State<Home> {
                 dataListUpdated[index].phone,
                 dataListUpdated[index].table,
                 dataListUpdated[index].timestamp,
-                dataListUpdated[index].delivered,
               ));
         });
   }
 
-  Widget orderCardUI(Map menu, String phone, String table, String timestamp,
-      String delivered) {
+  Widget orderCardUI(Map menu, String phone, String table, String timestamp) {
     return Container(
       margin: const EdgeInsets.only(bottom: 0, top: 10),
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
       child: Container(
           decoration: BoxDecoration(
-              color: delivered == '0' ? Colors.cyan : Colors.cyan.shade100,
+              color: Colors.cyan,
               borderRadius: BorderRadius.only(
                 bottomLeft:
                     Radius.circular(MediaQuery.of(context).size.height * 0.05),
@@ -286,8 +283,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  showOrderDialogFunc(
-      context, delivered, dbKey, phone, table, menu, timestamp) {
+  showOrderDialogFunc(context, dbKey, phone, table, menu, timestamp) {
     return showDialog(
         context: context,
         builder: (context) {
@@ -306,9 +302,7 @@ class _HomeState extends State<Home> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              delivered == '0'
-                                  ? '주문이 나갔습니까?'
-                                  : '주문이 이미 나간 건입니다.',
+                              '주문이 나갔습니까?',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize:
@@ -320,17 +314,15 @@ class _HomeState extends State<Home> {
                             ),
                             ElevatedButton(
                               onPressed: () async {
-                                if (delivered == '0') {
-                                  await FirebaseDatabase.instance
-                                      .reference()
-                                      .child('Order/$storeID/$dbKey')
-                                      .update({'delivered': 1});
-                                  await FirebaseDatabase.instance
-                                      .reference()
-                                      .child('Payment/$storeID/${phone}_$table')
-                                      .push()
-                                      .set(menu);
-                                }
+                                await FirebaseDatabase.instance
+                                    .reference()
+                                    .child('Order/$storeID/$dbKey')
+                                    .remove();
+                                await FirebaseDatabase.instance
+                                    .reference()
+                                    .child('Payment/$storeID/${phone}_$table')
+                                    .push()
+                                    .set(menu);
                                 Navigator.pop(context);
                               },
                               child: const Text('확인'),
@@ -568,7 +560,10 @@ class _HomeState extends State<Home> {
                               onPressed: () async {
                                 final appTimestamp =
                                     CustomFunc().getTimestamp();
-                                //db 지우기
+                                await FirebaseDatabase.instance
+                                    .reference()
+                                    .child('Payment/$storeID/$dbKey')
+                                    .remove();
                                 await FirebaseFirestore.instance
                                     .collection('orderHistory_$storeID')
                                     .doc('${appTimestamp}_$dbKey')

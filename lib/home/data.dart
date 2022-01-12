@@ -1,9 +1,8 @@
 class OrderData {
-  String phone, table, timestamp, delivered, dbKey;
+  String phone, table, timestamp, dbKey;
   Map menu;
 
-  OrderData(this.menu, this.phone, this.table, this.timestamp, this.delivered,
-      this.dbKey);
+  OrderData(this.menu, this.phone, this.table, this.timestamp, this.dbKey);
 }
 
 class PaymentData {

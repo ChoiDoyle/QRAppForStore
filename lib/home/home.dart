@@ -1,10 +1,12 @@
 import 'dart:ffi';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:colorful_safe_area/colorful_safe_area.dart';
+import 'package:qrproject/home/custom_func.dart';
 
 import 'data.dart';
 
@@ -412,8 +414,10 @@ class _HomeState extends State<Home> {
       itemBuilder: (_, index) {
         return GestureDetector(
             onTap: () {
-              showPaymentDialogFunc(context,
-                  '${paymentListUpdated[index].phone}_${paymentListUpdated[index].table}');
+              showPaymentDialogFunc(
+                  context,
+                  '${paymentListUpdated[index].phone}_${paymentListUpdated[index].table}',
+                  paymentListUpdated[index].menu);
             },
             child: paymentCardUI(
               paymentListUpdated[index].menu,
@@ -531,7 +535,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  showPaymentDialogFunc(context, dbKey) {
+  showPaymentDialogFunc(context, dbKey, menu) {
     return showDialog(
         context: context,
         builder: (context) {
@@ -543,7 +547,7 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(10),
                         color: Colors.cyan,
                       ),
-                      padding: EdgeInsets.all(15),
+                      padding: const EdgeInsets.all(15),
                       width: MediaQuery.of(context).size.width * 0.7,
                       height: MediaQuery.of(context).size.height * 0.2,
                       child: Column(
@@ -562,7 +566,13 @@ class _HomeState extends State<Home> {
                             ),
                             ElevatedButton(
                               onPressed: () async {
+                                final appTimestamp =
+                                    CustomFunc().getTimestamp();
                                 //db 지우기
+                                await FirebaseFirestore.instance
+                                    .collection('orderHistory_$storeID')
+                                    .doc('${appTimestamp}_$dbKey')
+                                    .set({'menu': menu});
                                 Navigator.pop(context);
                               },
                               child: const Text('확인'),

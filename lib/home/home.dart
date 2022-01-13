@@ -20,6 +20,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  late Future<List<PaymentData>> _paymentDataForUpdate;
+
   String storeID = 'i';
   _HomeState(this.storeID);
 
@@ -340,8 +342,11 @@ class _HomeState extends State<Home> {
 
 //Payment List
   Widget paymentBuilder() {
+    setState(() {
+      _paymentDataForUpdate = fetchPaymentData();
+    });
     return FutureBuilder<List<PaymentData>>(
-      future: fetchPaymentData(),
+      future: _paymentDataForUpdate,
       builder: (context, paymentSnap) {
         switch (paymentSnap.connectionState) {
           case ConnectionState.waiting:
@@ -568,6 +573,9 @@ class _HomeState extends State<Home> {
                                     .collection('orderHistory_$storeID')
                                     .doc('${appTimestamp}_$dbKey')
                                     .set({'menu': menu});
+                                setState(() {
+                                  _paymentDataForUpdate = fetchPaymentData();
+                                });
                                 Navigator.pop(context);
                               },
                               child: const Text('확인'),

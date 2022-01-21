@@ -532,7 +532,11 @@ class _HomeState extends State<Home> {
     );
   }
 
-  showPaymentDialogFunc(context, dbKey, menu) {
+  showPaymentDialogFunc(context, dbKey, Map<String, int> menu) {
+    int finalPrice = 0;
+    menu.forEach((key, value) {
+      finalPrice = finalPrice + (int.parse(priceList[key].toString()) * value);
+    });
     return showDialog(
         context: context,
         builder: (context) {
@@ -572,7 +576,7 @@ class _HomeState extends State<Home> {
                                 await FirebaseFirestore.instance
                                     .collection('orderHistory_$storeID')
                                     .doc('${appTimestamp}_$dbKey')
-                                    .set({'menu': menu});
+                                    .set({'menu': menu, 'total': finalPrice});
                                 setState(() {
                                   _paymentDataForUpdate = fetchPaymentData();
                                 });

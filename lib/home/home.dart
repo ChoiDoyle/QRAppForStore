@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:colorful_safe_area/colorful_safe_area.dart';
+import 'package:qrproject/authenticate/sign_in.dart';
 import 'package:qrproject/home/custom_func.dart';
 
 import 'data.dart';
 
 class Home extends StatefulWidget {
-  //storeID 중복.. 이거 지워보고 에러 있는지 확인
-  String storeID = '1';
+  String storeID = '';
   Home({Key? key, required this.storeID}) : super(key: key);
 
   @override
@@ -22,7 +22,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late Future<List<PaymentData>> _paymentDataForUpdate;
 
-  String storeID = 'i';
+  String storeID = '';
   _HomeState(this.storeID);
 
   List<OrderData> dataListFinal = [];
@@ -51,55 +51,35 @@ class _HomeState extends State<Home> {
     final double height = MediaQuery.of(context).size.height;
     final double width = MediaQuery.of(context).size.width;
     return ColorfulSafeArea(
-      color: Colors.cyan,
+      color: Colors.white,
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            buildTopLabel(height, width),
-            SizedBox(
-              height: width * 0.01,
+        appBar: AppBar(
+          title: Text('$storeID의 오늘 하루도 화이팅!',
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          elevation: 0.0,
+          backgroundColor: Colors.grey[200],
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.logout,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                CustomFunc().removeSharedVar('storeName');
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const SignIn(),
+                    ));
+              },
             ),
-            Expanded(child: buildListView()),
           ],
         ),
+        body: buildListView(),
         bottomNavigationBar: buildNavigationBar(),
-      ),
-    );
-  }
-
-  Container buildTopLabel(double height, double width) {
-    return Container(
-      height: 300.h,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            bottomRight: Radius.circular(height * 0.1),
-          ),
-          color: Colors.cyan),
-      child: Stack(
-        children: [
-          Positioned(
-              top: 30.h,
-              left: 0,
-              child: Container(
-                height: 200.h,
-                width: width * 0.8,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(height * 0.03),
-                      bottomRight: Radius.circular(height * 0.03),
-                    )),
-              )),
-          Positioned(
-              top: 100.h,
-              left: width * 0.1,
-              child: Text(storeID,
-                  style: TextStyle(
-                      fontSize: 80.sp,
-                      color: Colors.cyan,
-                      fontWeight: FontWeight.bold))),
-        ],
       ),
     );
   }
@@ -113,15 +93,19 @@ class _HomeState extends State<Home> {
       type: BottomNavigationBarType.shifting,
       currentIndex: navigationIndex,
       onTap: (index) => setState(() => navigationIndex = index),
-      items: const [
+      fixedColor: Colors.black,
+      items: [
         BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Order',
-            backgroundColor: Colors.cyan),
+            icon: Icon(
+              Icons.food_bank,
+              color: Colors.black,
+            ),
+            label: '주문',
+            backgroundColor: Colors.grey[200]),
         BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Payment',
-            backgroundColor: Colors.cyan),
+            icon: Icon(Icons.attach_money, color: Colors.black),
+            label: '결제',
+            backgroundColor: Colors.grey[200]),
       ],
     );
   }
@@ -182,22 +166,24 @@ class _HomeState extends State<Home> {
   }
 
   Widget orderCardUI(Map menu, String phone, String table, String timestamp) {
+    final date = timestamp.split('-')[0];
+    final time = timestamp.split('-')[1];
     return Container(
-      margin: const EdgeInsets.only(bottom: 0, top: 10),
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
+      margin: EdgeInsets.only(bottom: 0, top: 20.h),
+      padding: EdgeInsets.only(left: 40.h, right: 40.h, bottom: 20.h),
       child: Container(
           decoration: BoxDecoration(
-              color: Colors.cyan,
+              color: Colors.grey[300],
               borderRadius: BorderRadius.only(
                 bottomLeft:
                     Radius.circular(MediaQuery.of(context).size.height * 0.05),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.cyan.withOpacity(0.15),
+                  color: Colors.black.withOpacity(0.3),
                   offset: const Offset(-10.0, 0.0),
-                  blurRadius: 20.0,
-                  spreadRadius: 4.0,
+                  blurRadius: 20.0.r,
+                  spreadRadius: 4.0.r,
                 )
               ]),
           padding: const EdgeInsets.only(
@@ -212,10 +198,10 @@ class _HomeState extends State<Home> {
                   width: double.infinity,
                   padding: const EdgeInsets.only(right: 20),
                   child: Text(
-                    '$table번 테이블',
+                    '$table번 테이블 주문내역',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 90.sp,
                         fontWeight: FontWeight.bold),
                   )),
@@ -226,10 +212,10 @@ class _HomeState extends State<Home> {
                   width: double.infinity,
                   padding: const EdgeInsets.only(right: 20),
                   child: Text(
-                    '주문시각 : $timestamp',
+                    '주문시각 : ${date.substring(2, 4)}월 ${date.substring(4, 6)}일 ${time.substring(0, 2)}시 ${time.substring(3, 5)}분',
                     textAlign: TextAlign.right,
                     style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 50.sp,
                         fontWeight: FontWeight.bold),
                   )),
@@ -264,25 +250,61 @@ class _HomeState extends State<Home> {
 
   Widget orderMenuCardUI(String menuName, String menuNo) {
     return Container(
-      padding: const EdgeInsets.only(left: 1, right: 1, bottom: 1),
-      child: Container(
-          decoration: const BoxDecoration(color: Colors.transparent),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$menuName : $menuNo',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 70.sp,
+        decoration: const BoxDecoration(color: Colors.transparent),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  height: 80.h,
+                  width: 650.h,
+                  child: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      menuName,
+                      textAlign: TextAlign.start,
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 0.1,
-              ),
-            ],
-          )),
-    );
+                SizedBox(
+                  height: 80.h,
+                  width: 100.h,
+                  child: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      ' : ',
+                      textAlign: TextAlign.start,
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 80.h,
+                  width: 200.h,
+                  child: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '$menuNo개',
+                      textAlign: TextAlign.start,
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 10.h,
+            ),
+          ],
+        ));
   }
 
   showOrderDialogFunc(context, dbKey, phone, table, menu, timestamp) {
@@ -293,50 +315,56 @@ class _HomeState extends State<Home> {
               child: Material(
                   type: MaterialType.transparency,
                   child: Container(
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: Colors.cyan,
+                        color: Colors.grey,
                       ),
-                      padding: EdgeInsets.all(15),
+                      padding: EdgeInsets.all(10.h),
                       width: MediaQuery.of(context).size.width * 0.7,
-                      height: MediaQuery.of(context).size.height * 0.2,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              '주문이 나갔습니까?',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize:
-                                      MediaQuery.of(context).size.width * 0.05,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(
-                              height: 0.1,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                await FirebaseDatabase.instance
-                                    .reference()
-                                    .child('Order/$storeID/$dbKey')
-                                    .remove();
-                                await FirebaseDatabase.instance
-                                    .reference()
-                                    .child('Payment/$storeID/${phone}_$table')
-                                    .push()
-                                    .set(menu);
-                                Navigator.pop(context);
-                              },
-                              child: const Text('확인'),
-                              style: ElevatedButton.styleFrom(
-                                  primary: Colors.black,
-                                  textStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                            )
-                          ]))));
+                      height: 350.h,
+                      child: Center(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              SizedBox(
+                                height: 30.h,
+                              ),
+                              Text(
+                                '주문이 나갔습니까?',
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 80.sp,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 0.1.h,
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  await FirebaseDatabase.instance
+                                      .reference()
+                                      .child('Order/$storeID/$dbKey')
+                                      .remove();
+                                  await FirebaseDatabase.instance
+                                      .reference()
+                                      .child('Payment/$storeID/${phone}_$table')
+                                      .push()
+                                      .set(menu);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('확인'),
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.black,
+                                    alignment: Alignment.center,
+                                    textStyle: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 70.sp,
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                              )
+                            ]),
+                      ))));
         });
   }
 
@@ -404,7 +432,6 @@ class _HomeState extends State<Home> {
   }
 
   Widget paymentList(List<PaymentData> paymentListUpdated) => ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       scrollDirection: Axis.vertical,
       itemCount: paymentListUpdated.length,
@@ -429,21 +456,21 @@ class _HomeState extends State<Home> {
       finalPrice = finalPrice + (int.parse(priceList[key].toString()) * value);
     });
     return Container(
-      margin: const EdgeInsets.only(bottom: 0, top: 10),
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
+      margin: EdgeInsets.only(bottom: 0, top: 20.h),
+      padding: EdgeInsets.only(left: 40.h, right: 40.h, bottom: 20.h),
       child: Container(
           decoration: BoxDecoration(
-              color: Colors.cyan,
+              color: Colors.grey[300],
               borderRadius: BorderRadius.only(
                 bottomLeft:
                     Radius.circular(MediaQuery.of(context).size.height * 0.05),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.cyan.withOpacity(0.15),
+                  color: Colors.black.withOpacity(0.3),
                   offset: const Offset(-10.0, 0.0),
-                  blurRadius: 20.0,
-                  spreadRadius: 4.0,
+                  blurRadius: 20.0.r,
+                  spreadRadius: 4.0.r,
                 )
               ]),
           padding: const EdgeInsets.only(
@@ -461,27 +488,27 @@ class _HomeState extends State<Home> {
                   '$table번 테이블 합계',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                       fontSize: 80.sp,
                       fontWeight: FontWeight.bold),
                 ),
               ),
               SizedBox(
-                height: 0.05.h,
+                height: 0.2.h,
               ),
               paymentMenuList(menu, context),
               SizedBox(
-                height: 0.1.h,
+                height: 0.15.h,
               ),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(right: 20),
+                padding: EdgeInsets.only(right: 20.h),
                 child: Text(
                   '합계 : $finalPrice원',
                   textAlign: TextAlign.end,
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 80.sp,
+                      color: Colors.black,
+                      fontSize: 60.sp,
                       fontWeight: FontWeight.bold),
                 ),
               ),
@@ -517,12 +544,59 @@ class _HomeState extends State<Home> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '$menuName($menuNo개) : $menuPrice원',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 70.sp,
-                ),
+              Row(
+                children: [
+                  Container(
+                    height: 80.h,
+                    width: 500.h,
+                    child: FittedBox(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        menuName,
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 80.h,
+                    width: 150.h,
+                    child: FittedBox(
+                      child: Text(
+                        '($menuNo개)',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 80.h,
+                    width: 80.h,
+                    child: FittedBox(
+                      child: Text(
+                        ' : ',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 80.h,
+                    width: 200.h,
+                    child: FittedBox(
+                      child: Text(
+                        '$menuPrice원',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(
                 height: 0.1,
@@ -544,54 +618,66 @@ class _HomeState extends State<Home> {
               child: Material(
                   type: MaterialType.transparency,
                   child: Container(
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: Colors.cyan,
+                        color: Colors.grey,
                       ),
-                      padding: const EdgeInsets.all(15),
+                      padding: EdgeInsets.all(10.h),
                       width: MediaQuery.of(context).size.width * 0.7,
-                      height: MediaQuery.of(context).size.height * 0.2,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              '결제를 하셨습니까?',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize:
-                                      MediaQuery.of(context).size.width * 0.05,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(
-                              height: 0.1.h,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                final appTimestamp =
-                                    CustomFunc().getTimestamp();
-                                await FirebaseDatabase.instance
-                                    .reference()
-                                    .child('Payment/$storeID/$dbKey')
-                                    .remove();
-                                await FirebaseFirestore.instance
-                                    .collection('orderHistory_$storeID')
-                                    .doc('${appTimestamp}_$dbKey')
-                                    .set({'menu': menu, 'total': finalPrice});
-                                setState(() {
-                                  _paymentDataForUpdate = fetchPaymentData();
-                                });
-                                Navigator.pop(context);
-                              },
-                              child: const Text('확인'),
-                              style: ElevatedButton.styleFrom(
-                                  primary: Colors.black,
-                                  textStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                            )
-                          ]))));
+                      height: 400.h,
+                      child: Center(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              SizedBox(
+                                height: 30.h,
+                              ),
+                              Text(
+                                '총 금액 : $finalPrice원',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 60.sp,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                '결제를 하셨습니까?',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 80.sp,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final appTimestamp =
+                                      CustomFunc().getTimestamp();
+                                  await FirebaseDatabase.instance
+                                      .reference()
+                                      .child('Payment/$storeID/$dbKey')
+                                      .remove();
+                                  await FirebaseFirestore.instance
+                                      .collection('orderHistory_$storeID')
+                                      .doc('${appTimestamp}_$dbKey')
+                                      .set({'menu': menu, 'total': finalPrice});
+                                  setState(() {
+                                    _paymentDataForUpdate = fetchPaymentData();
+                                  });
+                                  Navigator.pop(context);
+                                },
+                                child: Text('확인'),
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.black,
+                                    alignment: Alignment.center,
+                                    textStyle: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 70.sp,
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                              )
+                            ]),
+                      ))));
         });
   }
 }

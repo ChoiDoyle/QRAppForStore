@@ -65,8 +65,11 @@ class InputWrapper extends StatelessWidget {
                 final SharedPreferences sharedPreferences =
                     await SharedPreferences.getInstance();
                 sharedPreferences.setString('storeName', idFinal);
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => Home(storeID: idFinal)));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => Home(storeID: idFinal),
+                    ));
               } else {
                 showToast();
               }

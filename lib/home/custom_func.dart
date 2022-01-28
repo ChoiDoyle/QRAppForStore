@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 class CustomFunc {
   String getTimestamp() {
     DateTime _now = DateTime.now();
@@ -17,5 +19,11 @@ class CustomFunc {
 
     final _timestamp = '$year$month$day-$hour:$min:$sec';
     return _timestamp;
+  }
+
+  Future removeSharedVar(String id) async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    sharedPreferences.remove(id);
   }
 }

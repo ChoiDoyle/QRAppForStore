@@ -1,3 +1,4 @@
+import 'package:colorful_safe_area/colorful_safe_area.dart';
 import 'package:flutter/material.dart';
 import 'package:qrproject/home/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,10 +59,11 @@ class _SignInState extends State<SignIn> {
     var storeName = sharedPreferences.getString('storeName');
     if (storeName == null) {
     } else {
-      Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => Home(storeID: storeName)));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) => Home(storeID: storeName),
+          ));
     }
   }
 }
-
-class EgdeInsets {}

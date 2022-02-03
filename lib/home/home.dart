@@ -202,11 +202,11 @@ class _HomeState extends State<Home> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Colors.black,
-                        fontSize: 90.sp,
+                        fontSize: 70.sp,
                         fontWeight: FontWeight.bold),
                   )),
               SizedBox(
-                height: 0.02.h,
+                height: 20.h,
               ),
               Container(
                   width: double.infinity,
@@ -216,11 +216,11 @@ class _HomeState extends State<Home> {
                     textAlign: TextAlign.right,
                     style: TextStyle(
                         color: Colors.black,
-                        fontSize: 50.sp,
+                        fontSize: 45.sp,
                         fontWeight: FontWeight.bold),
                   )),
               SizedBox(
-                height: 0.05.h,
+                height: 20.h,
               ),
               orderMenuList(menu, context),
               SizedBox(

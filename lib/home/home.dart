@@ -1,6 +1,5 @@
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -69,11 +68,13 @@ class _HomeState extends State<Home> {
               ),
               onPressed: () {
                 CustomFunc().removeSharedVar('storeName');
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => const SignIn(),
-                    ));
+                FirebaseAuth.instance.signOut().then((_) => {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) => const SignIn(),
+                          ))
+                    });
               },
             ),
           ],
@@ -186,17 +187,17 @@ class _HomeState extends State<Home> {
                   spreadRadius: 4.0.r,
                 )
               ]),
-          padding: const EdgeInsets.only(
-            left: 30,
-            top: 10,
-            bottom: 10,
+          padding: EdgeInsets.only(
+            left: 60.h,
+            top: 20.h,
+            bottom: 20.h,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.only(right: 20),
+                  padding: EdgeInsets.only(right: 40.h),
                   child: Text(
                     '$table번 테이블 주문내역',
                     textAlign: TextAlign.center,
@@ -210,7 +211,7 @@ class _HomeState extends State<Home> {
               ),
               Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.only(right: 20),
+                  padding: EdgeInsets.only(right: 40.h),
                   child: Text(
                     '주문시각 : ${date.substring(2, 4)}월 ${date.substring(4, 6)}일 ${time.substring(0, 2)}시 ${time.substring(3, 5)}분',
                     textAlign: TextAlign.right,
@@ -223,9 +224,6 @@ class _HomeState extends State<Home> {
                 height: 20.h,
               ),
               orderMenuList(menu, context),
-              SizedBox(
-                height: 0.1.h,
-              ),
             ],
           )),
     );
@@ -336,9 +334,6 @@ class _HomeState extends State<Home> {
                                     color: Colors.black,
                                     fontSize: 80.sp,
                                     fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(
-                                height: 0.1.h,
                               ),
                               ElevatedButton(
                                 onPressed: () async {
@@ -473,17 +468,17 @@ class _HomeState extends State<Home> {
                   spreadRadius: 4.0.r,
                 )
               ]),
-          padding: const EdgeInsets.only(
-            left: 30,
-            top: 10,
-            bottom: 10,
+          padding: EdgeInsets.only(
+            left: 60.h,
+            top: 20.h,
+            bottom: 20.h,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(right: 20),
+                padding: EdgeInsets.only(right: 40.h),
                 child: Text(
                   '$table번 테이블 합계',
                   textAlign: TextAlign.center,

@@ -48,6 +48,9 @@ dependencies:
   #audio player
   audioplayers: ^ 0.20.1
 
+  #local notification
+  flutter_local_notifications: ^9.2.0
+
   #others
   colorful_safe_area: ^0.3.0
 

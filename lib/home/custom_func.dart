@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomFunc {
@@ -27,9 +29,22 @@ class CustomFunc {
         await SharedPreferences.getInstance();
     sharedPreferences.remove(id);
   }
+
+  //페이지 이동
+  void popPage(BuildContext context, page) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => page));
+  }
+
+  void startPage(BuildContext context, page) {
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => page,
+        ));
+  }
 }
 
-/*class NotificatoinAPi {
+class NotificationAPi {
   static final _notifications = FlutterLocalNotificationsPlugin();
   static final onNotifications = BehaviorSubject<String?>();
 
@@ -38,7 +53,7 @@ class CustomFunc {
       android: AndroidNotificationDetails(
         'channel id',
         'channel name',
-        'channel description',
+        channelDescription: 'channel description',
         importance: Importance.max,
       ),
       iOS: IOSNotificationDetails(),
@@ -46,9 +61,9 @@ class CustomFunc {
   }
 
   static Future init({bool initScheduled = false}) async {
-    final android = AndroidInitializationSettings('icon');
-    final iOS = IOSInitializationSettings();
-    final settings = InitializationSettings(android: android, iOS: iOS);
+    final _android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final _iOS = IOSInitializationSettings();
+    final settings = InitializationSettings(android: _android, iOS: _iOS);
 
     await _notifications.initialize(settings,
         onSelectNotification: (payload) async {
@@ -69,4 +84,4 @@ class CustomFunc {
         await _notificationDetails(),
         payload: payload,
       );
-}*/
+}

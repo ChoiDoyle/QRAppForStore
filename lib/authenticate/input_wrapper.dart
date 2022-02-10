@@ -33,7 +33,7 @@ class InputWrapper extends StatelessWidget {
                 child: TextField(
                   controller: idInputController,
                   decoration: const InputDecoration(
-                      hintText: 'Enter your ID',
+                      hintText: '사장님의 식당 이름을 입력해주세요.',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none),
                 )),
@@ -48,7 +48,7 @@ class InputWrapper extends StatelessWidget {
                 child: TextField(
                   controller: pwInputController,
                   decoration: const InputDecoration(
-                      hintText: 'Enter your passcode',
+                      hintText: '비밀번호를 입력해주세요.',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none),
                 )),

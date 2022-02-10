@@ -3,11 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:colorful_safe_area/colorful_safe_area.dart';
 import 'package:qrproject/authenticate/sign_in.dart';
 import 'package:qrproject/home/custom_func.dart';
-
 import 'data.dart';
 
 class Home extends StatefulWidget {
@@ -29,6 +29,8 @@ class _HomeState extends State<Home> {
   int navigationIndex = 0;
 
   Map<String, int> priceList = <String, int>{};
+
+  TextEditingController logoutPWController = TextEditingController();
 
   @override
   void initState() {
@@ -67,14 +69,7 @@ class _HomeState extends State<Home> {
                 color: Colors.black,
               ),
               onPressed: () {
-                CustomFunc().removeSharedVar('storeName');
-                FirebaseAuth.instance.signOut().then((_) => {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (BuildContext context) => const SignIn(),
-                          ))
-                    });
+                showLogoutDialogFunc(context);
               },
             ),
           ],
@@ -83,6 +78,83 @@ class _HomeState extends State<Home> {
         bottomNavigationBar: buildNavigationBar(),
       ),
     );
+  }
+
+  showLogoutDialogFunc(context) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return Center(
+              child: Material(
+                  type: MaterialType.transparency,
+                  child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey,
+                      ),
+                      padding: EdgeInsets.all(10.h),
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: 600.h,
+                      child: Center(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              SizedBox(
+                                height: 20.h,
+                              ),
+                              Text(
+                                '아래에 비밀번호를 입력해주세요',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 50.sp,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 10.h,
+                              ),
+                              Container(
+                                  padding: EdgeInsets.all(5.h),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.white)),
+                                  child: TextField(
+                                    controller: logoutPWController,
+                                  )),
+                              Text(
+                                '현재 프로토단계로 사장님의 가게상황외에는 접근하실 수 없습니다.\n로그아웃이 필요하시면 아래의 번호로 연락주세요!\n010-4315-5840',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 30.sp,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  if (logoutPWController.text == '0509') {
+                                    CustomFunc().removeSharedVar('storeName');
+                                    FirebaseAuth.instance.signOut().then((_) =>
+                                        {
+                                          CustomFunc()
+                                              .startPage(context, SignIn())
+                                        });
+                                  } else {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                child: Text('확인'),
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.black,
+                                    alignment: Alignment.center,
+                                    textStyle: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 70.sp,
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                              )
+                            ]),
+                      ))));
+        });
   }
 
   buildListView() {

@@ -12,7 +12,7 @@ class Header extends StatelessWidget {
         children: const <Widget>[
           Center(
             child: Text(
-              'Login',
+              '로그인',
               style: TextStyle(color: Colors.white, fontSize: 40),
             ),
           ),
@@ -21,7 +21,7 @@ class Header extends StatelessWidget {
           ),
           Center(
             child: Text(
-              'Welcome to QR Project',
+              '주문이요',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
           )
